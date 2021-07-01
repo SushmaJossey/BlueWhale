@@ -1,0 +1,950 @@
+======================================
+TRANSCRIPTOME ASSEMBLY 
+======================================
+
+trinity/2.6.5
+
+Trinity.sh
+#!/bin/bash
+#SBATCH --account=rrg-marke
+#SBATCH -t 3-00:00
+#SBATCH --mem=500G
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=32
+#SBATCH --job-name=Trinity_BM1703_Mas3.8_Jan2019
+#SBATCH --output output_%x_%j.txt
+#SBATCH --error errors_%x_%j.txt
+#SBATCH --mail-type=ALL
+#SBATCH --mail-user=@gmail.com
+
+module load rsem/1.3.0
+module load samtools
+module load bowtie2/2.3.4.1
+module load nixpkgs/16.09 gcc/5.4.0 openmpi/2.1.1
+module load salmon/0.9.1
+module load transdecoder/3.0.1
+module load jellyfish/2.2.6
+module load trinity/2.6.5
+module load python/2.7.14
+
+echo "Starting run at: `date`"
+Trinity  --seqType fq --max_memory 250G --left /home/sjossey/projects/rrg-marke/sjossey/RNASeq/BM1703_R1.fastq.gz --right /home/sjossey/projects/rrg-marke/sjossey/RNASeq/BM1703_R2.fastq.gz --CPU 32 --output /home/sjossey/projects/rrg-marke/sjossey/RNASeq/Trinity_BM1703_Jan2018
+
+echo "Program finished with exit code $? at: `date`"
+
+Produced file renamed to: Trinity_BM1703_Jan2019.fasta
+
+
+
+tophat/2.1.1 
+
+Bowtie_index.sh
+#!/bin/bash
+#SBATCH --account=rrg-marke
+#SBATCH -t  0-01:00
+#SBATCH --mem=500G
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=32
+#SBATCH --job-name=MaskedBowtie
+#SBATCH -o output_%x_%j.txt
+#SBATCH -e errors_%x_%j.txt
+#SBATCH --mail-type=ALL
+#SBATCH --mail-user=@gmail.com
+
+module load nixpkgs/16.09  intel/2016.4 bowtie2/2.3.4.1
+bowtie2-build --threads 32 -f ../Mas3.8_Pilon1_dedupe99.5_edNm.masked.fa  Masked_Mas3.8_bowtie.index
+
+
+Produced file :Masked_Mas3.8_bowtie.index.1.bt2
+Masked_Mas3.8_bowtie.index.2.bt2
+Masked_Mas3.8_bowtie.index.3.bt2
+Masked_Mas3.8_bowtie.index.4.bt2
+Masked_Mas3.8_bowtie.index.rev.1.bt2
+Masked_Mas3.8_bowtie.index.rev.2.bt2
+
+
+Tophat.sh
+
+#!/bin/bash
+#SBATCH --account=rrg-marke
+#SBATCH -t 1-00:00
+#SBATCH --mem=500G
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=32
+#SBATCH --job-name=Tophat_maskedRNAseq_Mas3.8_Jan2019
+#SBATCH --output output_%x_%j.txt
+#SBATCH --error errors_%x_%j.txt
+#SBATCH --mail-type=ALL
+#SBATCH --mail-user=@gmail.com
+
+module load nixpkgs/16.09  intel/2016.4 
+module load samtools/1.9
+module load bowtie2/2.3.4.1
+module load tophat/2.1.1
+echo "Starting run at: `date`"
+tophat --b2-sensitive -p 32  --library-type fr-firststrand   -o /home/sjossey/projects/rrg-marke/sjossey/RNASeq/MaskedTophat_BM1703_04_Jan2018 Masked_Mas3.8_bowtie.index /home/sjossey/projects/rrg-marke/sjossey/RNASeq/BM1703_R1.fastq.gz,/home/sjossey/projects/rrg-marke/sjossey/RNASeq/BM1704_R1.fastq.gz  /home/sjossey/projects/rrg-marke/sjossey/RNASeq/BM1703_R2.fastq.gz,/home/sjossey/projects/rrg-marke/sjossey/RNASeq/BM1704_R2.fastq.gz
+echo "Program finished with exit code $? at: `date`"
+
+Produced file :unmapped.bam
+logs
+accepted_hits.bam
+junctions.bed
+align_summary.txt
+deletions.bed
+insertions.bed
+prep_reads.info
+
+
+Cufflinks.sh
+#!/bin/bash
+#SBATCH --account=rrg-marke
+#SBATCH -t 1-00:00
+#SBATCH --mem=500G
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=32
+#SBATCH --job-name=Cufflinks_Mask_Jan2019
+#SBATCH --output output_%x_%j.txt
+#SBATCH --error errors_%x_%j.txt
+#SBATCH --mail-type=ALL
+#SBATCH --mail-user=@gmail.com
+
+module load nixpkgs/16.09  intel/2016.4
+module load samtools/1.9
+module load bowtie2/2.3.4.1
+module load cufflinks/2.2.1
+
+cufflinks --library-type fr-firststrand --num-threads 32 /home/sjossey/projects/rrg-marke/sjossey/RNASeq/MaskedTophat_BM1703_04_Jan2018/accepted_hits.bam
+
+Produced file: skipped.gtf
+	       	genes.fpkm_tracking
+	       	isoforms.fpkm_tracking
+	       	transcripts.gtf
+
+gffread_Tophat_Cuff.sh
+
+#!/bin/bash
+#SBATCH --account=rrg-marke
+#SBATCH -t 0-02:00
+#SBATCH --mem=500G
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=32
+#SBATCH --output output_%x_%j.txt
+#SBATCH --error errors_%x_%j.txt
+#SBATCH --mail-type=ALL
+#SBATCH --mail-user=@gmail.com
+
+module load nixpkgs/16.09  intel/2016.4
+module load samtools/1.9
+module load bowtie2/2.3.4.1
+module load cufflinks/2.2.1
+
+echo "Starting run at: `date`"
+gffread -w /home/sjossey/projects/rrg-marke/sjossey/RNASeq/MaskedTophat_BM1703_04_Jan2018/MaskedTophat_Jan2018_trancripts.fa -g Masked_Mas3.8_bowtie.index.fa  /home/sjossey/projects/rrg-marke/sjossey/RNASeq/MaskedTophat_BM1703_04_Jan2018/transcripts.gtf
+echo "Program finished with exit code $? at: `date`"
+
+Produced file: MaskedTophat_Jan2018_trancripts.fa
+
+=========================================================================
+REMOVE THE DUPLICATE PREDICTED MERGED TRANSCRIPTS FROM TRINITY AND TOPHAT
+=========================================================================
+
+$ cat Trinity_BM1703_Jan2019.fasta MaskedTophat_Jan2018_trancripts.fa > Trinity03_Maskedtophat_transcript.fa
+
+cdhit to remove duplicate transcripts from tophat and trinity
+
+#!/bin/bash
+#SBATCH --account=rrg-marke
+#SBATCH -t 1-00:00
+#SBATCH --mem=500G
+#SBATCH  --cpus-per-task=1
+#SBATCH --job-name=Cdhit_trin_mktoph_trans
+#SBATCH -o output_%x_%j.txt
+#SBATCH -e errors_%x_%j.txt
+#SBATCH --mail-type=ALL
+#SBATCH --mail-user=@gmail.com
+
+module load nixpkgs/16.09 gcc/5.4.0 openmpi/2.1.1  cd-hit/4.6.8
+
+echo "Starting run at: `date`"
+cd-hit-est -o cdhit -c 0.98 -i Trinity03_Maskedtophat_transcript.fa -p 1 -d 0 -b 3 -T 10
+echo "Program finished with exit code $? at: `date`"
+
+==================================================================================
+PROTEIN FROM NCBI FOR MAKER DOWNLOADED FROM NCBI AND MERGED AND DUPLICATES REMOVED
+==================================================================================
+
+$ cat Bos_taurus_protein.fasta Balaena_mysticetus_protein.fasta Blue_whale_protein.fasta Minke_protein.fasta Cetacean_Prot_seq.fasta > Cow_Bow_Blue_Minke__Ceat_Prot.fasta
+Remove duplicates from protein fasta Cow_Bow_Blue_Minke__Ceat_Prot.fasta (size: 326M)
+
+Cdhit_protein.sh
+#!/bin/bash
+#SBATCH --account=rrg-marke
+#SBATCH -t 1-00:00
+#SBATCH --mem=500G
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=32
+#SBATCH --job-name=Cdhit_protein
+#SBATCH -o output_%x_%j.txt
+#SBATCH -e errors_%x_%j.txt
+#SBATCH --mail-type=ALL
+#SBATCH --mail-user=@gmail.com
+
+module load nixpkgs/16.09 gcc/5.4.0 openmpi/2.1.1  cd-hit/4.6.8
+
+echo "Starting run at: `date`"
+
+cd-hit -i Cow_Bow_Blue_Minke__Ceat_Prot.fasta -o Cow_Bow_Blue_Minke_Ceat_Prot_cdhit.fasta -c 0.98 -n 5 -M 500000 -d 0 -T 32
+
+echo "Starting run at: `date`"
+
+Produced  Cow_Bow_Blue_Minke_Ceat_Prot_cdhit.fasta (size 98M)
+    Cow_Bow_Blue_Minke_Ceat_Prot_cdhit.fasta.clstr
+
+
+======================================================
+Maker (maker/2.31.9)
+=======================================================
+Using the Protein and transcript 
+1.	Cow_Bow_Blue_Minke_Ceat_Prot_cdhit.fasta
+2.	Trinity03_tophat_trans_cdhit.fa
+3.	Mas3.8_ded_ednm-families.fa  (RepeatModeler)
+
+$ maker -CTL
+$ ls -lth
+total 20K
+-rw-rw-r-- 1 sjossey sjossey 1.4K Jan 21 11:13 maker_bopts.ctl
+-rw-rw-r-- 1 sjossey sjossey 1.7K Jan 21 11:13 maker_exe.ctl
+-rw-rw-r-- 1 sjossey sjossey 4.5K Jan 21 11:13 maker_opts.ctl
+drwxrwxr-x 4 sjossey sjossey 4.0K Jan 21 11:12 _Inline
+
+-----------------------
+Edited maker_bopts.ctl
+-----------------------
+[sjossey@cedar1 MakerM6_3.2]$ cat  maker_bopts.ctl
+#-----BLAST and Exonerate Statistics Thresholds
+blast_type=ncbi+ #set to 'ncbi+', 'ncbi' or 'wublast'
+
+pcov_blastn=0.8 #Blastn Percent Coverage Threhold EST-Genome Alignments
+pid_blastn=0.85 #Blastn Percent Identity Threshold EST-Genome Aligments
+eval_blastn=1e-10 #Blastn eval cutoff
+bit_blastn=40 #Blastn bit cutoff
+depth_blastn=0 #Blastn depth cutoff (0 to disable cutoff)
+
+pcov_blastx=0.5 #Blastx Percent Coverage Threhold Protein-Genome Alignments
+pid_blastx=0.4 #Blastx Percent Identity Threshold Protein-Genome Aligments
+eval_blastx=1e-06 #Blastx eval cutoff
+bit_blastx=30 #Blastx bit cutoff
+depth_blastx=0 #Blastx depth cutoff (0 to disable cutoff)
+
+pcov_tblastx=0.8 #tBlastx Percent Coverage Threhold alt-EST-Genome Alignments
+pid_tblastx=0.85 #tBlastx Percent Identity Threshold alt-EST-Genome Aligments
+eval_tblastx=1e-10 #tBlastx eval cutoff
+bit_tblastx=40 #tBlastx bit cutoff
+depth_tblastx=0 #tBlastx depth cutoff (0 to disable cutoff)
+
+pcov_rm_blastx=0.5 #Blastx Percent Coverage Threhold For Transposable Element Masking
+pid_rm_blastx=0.4 #Blastx Percent Identity Threshold For Transposbale Element Masking
+eval_rm_blastx=1e-06 #Blastx eval cutoff for transposable element masking
+bit_rm_blastx=30 #Blastx bit cutoff for transposable element masking
+
+ep_score_limit=20 #Exonerate protein percent of maximal score threshold
+en_score_limit=20 #Exonerate nucleotide percent of maximal score threshold
+
+-----------------------
+Edited maker_opts.ctl
+-----------------------
+
+#-----Genome (these are always required)
+genome=/home/sjossey/scratch/Post_Masurca_all_pac+Ill2/Mas3.8_Pilon1_dedupe99.5_edNm.fa #genome sequence (fasta file or fasta embeded in GFF3 file)
+organism_type=eukaryotic #eukaryotic or prokaryotic. Default is eukaryotic
+
+#-----Re-annotation Using MAKER Derived GFF3
+maker_gff= #MAKER derived GFF3 file
+est_pass=0 #use ESTs in maker_gff: 1 = yes, 0 = no
+altest_pass=0 #use alternate organism ESTs in maker_gff: 1 = yes, 0 = no
+protein_pass=0 #use protein alignments in maker_gff: 1 = yes, 0 = no
+rm_pass=0 #use repeats in maker_gff: 1 = yes, 0 = no
+model_pass=0 #use gene models in maker_gff: 1 = yes, 0 = no
+pred_pass=0 #use ab-initio predictions in maker_gff: 1 = yes, 0 = no
+other_pass=0 #passthrough anyything else in maker_gff: 1 = yes, 0 = no
+
+#-----EST Evidence (for best results provide a file for at least one)
+est=Trinity03_tophat_trans_cdhit.fa #set of ESTs or assembled mRNA-seq in fasta format
+altest= #EST/cDNA sequence file in fasta format from an alternate organism
+est_gff= #aligned ESTs or mRNA-seq from an external GFF3 file
+altest_gff= #aligned ESTs from a closly relate species in GFF3 format
+
+#-----Protein Homology Evidence (for best results provide a file for at least one)
+protein=Cow_Bow_Blue_Minke_Ceat_Prot_cdhit.fasta #protein sequence file in fasta format (i.e. from mutiple oransisms)
+protein_gff=  #aligned protein homology evidence from an external GFF3 file
+
+#-----Repeat Masking (leave values blank to skip repeat masking)
+model_org=mammal #select a model organism for RepBase masking in RepeatMasker
+rmlib=/home/sjossey/scratch/Post_Masurca_all_pac+Ill2/Mas3.8_ded_ednm-families.fa #provide an organism specific repeat library in fasta format for RepeatMasker
+repeat_protein= #provide a fasta file of transposable element proteins for RepeatRunner
+rm_gff= #pre-identified repeat elements from an external GFF3 file
+prok_rm=0 #forces MAKER to repeatmask prokaryotes (no reason to change this), 1 = yes, 0 = no
+softmask=1 #use soft-masking rather than hard-masking in BLAST (i.e. seg and dust filtering)
+
+#-----Gene Prediction
+snaphmm= #SNAP HMM file
+gmhmm= #GeneMark HMM file
+augustus_species= #Augustus gene prediction species model
+fgenesh_par_file= #FGENESH parameter file
+pred_gff= #ab-initio predictions from an external GFF3 file
+model_gff= #annotated gene models from an external GFF3 file (annotation pass-through)
+est2genome=1 #infer gene predictions directly from ESTs, 1 = yes, 0 = no
+protein2genome=1 #infer predictions from protein homology, 1 = yes, 0 = no
+trna=0 #find tRNAs with tRNAscan, 1 = yes, 0 = no
+snoscan_rrna= #rRNA file to have Snoscan find snoRNAs
+unmask=0 #also run ab-initio prediction programs on unmasked sequence, 1 = yes, 0 = no
+
+#-----Other Annotation Feature Types (features MAKER doesn't recognize)
+other_gff= #extra features to pass-through to final MAKER generated GFF3 file
+
+#-----External Application Behavior Options
+alt_peptide=C #amino acid used to replace non-standard amino acids in BLAST databases
+cpus=64 #max number of cpus to use in BLAST and RepeatMasker (not for MPI, leave 1 when using MPI)
+
+#-----MAKER Behavior Options
+max_dna_len=100000 #length for dividing up contigs into chunks (increases/decreases memory usage)
+min_contig=10000 #skip genome contigs below this length (under 10kb are often useless)
+
+pred_flank=200 #flank for extending evidence clusters sent to gene predictors
+pred_stats=0 #report AED and QI statistics for all predictions as well as models
+AED_threshold=1 #Maximum Annotation Edit Distance allowed (bound by 0 and 1)
+min_protein=0 #require at least this many amino acids in predicted proteins
+alt_splice=0 #Take extra steps to try and find alternative splicing, 1 = yes, 0 = no
+always_complete=0 #extra steps to force start and stop codons, 1 = yes, 0 = no
+map_forward=0 #map names and attributes forward from old GFF3 genes, 1 = yes, 0 = no
+keep_preds=0 #Concordance threshold to add unsupported gene prediction (bound by 0 and 1)
+
+split_hit=10000 #length for the splitting of hits (expected max intron size for evidence alignments)
+single_exon=0 #consider single exon EST evidence when generating annotations, 1 = yes, 0 = no
+single_length=250 #min length required for single exon ESTs if 'single_exon is enabled'
+correct_est_fusion=0 #limits use of ESTs in annotation to avoid fusion genes
+
+tries=2 #number of times to try a contig if there is a failure for some reason
+clean_try=0 #remove all data from previous run before retrying, 1 = yes, 0 = no
+clean_up=0 #removes theVoid directory with individual analysis files, 1 = yes, 0 = no
+TMP= #specify a directory other than the system default temporary directory for temporary files
+
+
+
+----------------------
+Edited maker_exe.ctl
+----------------------
+#-----Location of Executables Used by MAKER/EVALUATOR
+makeblastdb=/cvmfs/soft.computecanada.ca/easybuild/software/2017/avx2/Compiler/gcc5.4/blast+/2.6.0/bin/makeblastdb #location of NCBI+ makeblastdb executable
+blastn=/cvmfs/soft.computecanada.ca/easybuild/software/2017/avx2/Compiler/gcc5.4/blast+/2.6.0/bin/blastn #location of NCBI+ blastn executable
+blastx=/cvmfs/soft.computecanada.ca/easybuild/software/2017/avx2/Compiler/gcc5.4/blast+/2.6.0/bin/blastx #location of NCBI+ blastx executable
+tblastx=/cvmfs/soft.computecanada.ca/easybuild/software/2017/avx2/Compiler/gcc5.4/blast+/2.6.0/bin/tblastx #location of NCBI+ tblastx executable
+formatdb= #location of NCBI formatdb executable
+blastall= #location of NCBI blastall executable
+xdformat= #location of WUBLAST xdformat executable
+blasta= #location of WUBLAST blasta executable
+RepeatMasker=/home/sjossey/scratch/RepeatMasker/RepeatMasker #location of RepeatMasker executable
+exonerate=/cvmfs/soft.computecanada.ca/easybuild/software/2017/avx2/Compiler/gcc5.4/exonerate/2.4.0/bin/exonerate #location of exonerate executable
+
+#-----Ab-initio Gene Prediction Algorithms
+snap=/cvmfs/soft.computecanada.ca/easybuild/software/2017/avx2/Compiler/gcc5.4/snap/2013-11-29/bin/snap #location of snap executable
+gmhmme3= #location of eukaryotic genemark executable
+gmhmmp= #location of prokaryotic genemark executable
+augustus=/home/sjossey/projects/rrg-marke/sjossey/RNASeq/BUSCO_RNA/augustus/3.2.3/bin/augustus #location of augustus executable
+fgenesh= #location of fgenesh executable
+tRNAscan-SE= #location of trnascan executable
+snoscan=/home/sjossey/bin/snoscan #location of snoscan executable
+
+#-----Other Algorithms
+probuild= #location of probuild executable (required for genemark)
+
+
+Maker.sh
+
+#!/bin/bash
+#SBATCH --account=rrg-marke
+#SBATCH -t 2-00:00
+#SBATCH --mem=500G
+#SBATCH --nodes=2
+#SBATCH --ntasks-per-node=32
+#SBATCH --job-name=Maker_Mas3.8_March8
+#SBATCH -o output_%x_%j.txt
+#SBATCH -e errors_%x_%j.txt
+#SBATCH --mail-type=ALL
+#SBATCH --mail-user=@gmail.com
+
+module load nixpkgs/16.09 gcc/5.4.0 openmpi/2.1.1 maker/2.31.9
+echo "Starting run at: `date`"
+maker
+echo "Program finished with exit code $? at: `date`"
+
+ 
+$ tail  ../errors_Maker_Mas3.8_March8_20733956.txt
+adding statistics to annotations
+Calculating annotation quality statistics
+choosing best annotation set
+Choosing best annotations
+processing chunk output
+processing contig output
+
+
+Maker is now finished!!!
+
+
+$ ls -l
+Mas3.8_Pilon1_dedupe99.5_edNm_datastore
+mpi_blastdb
+seen.dbm
+maker_bopts.log
+Mas3.8_Pilon1_dedupe99.5_edNm_master_datastore_index.log
+maker_exe.log
+maker_opts.log
+Mas3.8_Pilon1_dedupe99.5_edNm.db
+
+
+gff3_merge.sh
+
+#!/bin/bash
+#SBATCH --account=rrg-marke
+#SBATCH -t 2-00:00
+#SBATCH --mem=500G
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=32
+#SBATCH --job-name=Maker_Mas3.8_gff3_merge
+#SBATCH -o output_%x_%j.txt
+#SBATCH -e errors_%x_%j.txt
+#SBATCH --mail-type=ALL
+#SBATCH --mail-user=@gmail.com
+
+
+module load nixpkgs/16.09  gcc/7.3.0  openmpi/3.1.2 maker/2.31.9
+echo "Starting run at: `date`"
+gff3_merge -d Mas3.8_Pilon1_dedupe99.5_edNm_master_datastore_index.log
+echo "Program finished with exit code $? at: `date`"
+
+PRODUCED FILE:
+Mas3.8_Pilon1_dedupe99.5_edNm.all.maker1.gff
+
+
+
+FASTA_MERGE.sh
+
+#!/bin/bash
+#SBATCH --account=rrg-marke
+#SBATCH -t 2-00:00
+#SBATCH --mem=500G
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=32
+#SBATCH --job-name=Maker_Mas3.8_fasta_merge
+#SBATCH -o output_%x_%j.txt
+#SBATCH -e errors_%x_%j.txt
+#SBATCH --mail-type=ALL
+#SBATCH --mail-user=@gmail.com
+
+
+module load nixpkgs/16.09  gcc/7.3.0  openmpi/3.1.2 maker/2.31.9
+echo "Starting run at: `date`"
+fasta_merge -d Mas3.8_Pilon1_dedupe99.5_edNm_master_datastore_index.log
+echo "Program finished with exit code $? at: `date`"
+
+
+PRODUCED FILES:
+Mas3.8_Pilon1_dedupe99.5_edNm.all.maker1.transcripts.fasta
+Mas3.8_Pilon1_dedupe99.5_edNm.all.maker1.proteins.fasta
+
+
+# GFF w/o the sequences
+
+gff3_merge_noname.sh
+
+#!/bin/bash
+#SBATCH --account=rrg-marke
+#SBATCH -t 0-04:00
+#SBATCH --mem=500G
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=32
+#SBATCH --job-name=Maker_Mas3.8_gff3_merge
+#SBATCH -o output_%x_%j.txt
+#SBATCH -e errors_%x_%j.txt
+#SBATCH --mail-type=ALL
+#SBATCH --mail-user=@gmail.com
+
+
+module load nixpkgs/16.09  gcc/7.3.0  openmpi/3.1.2 maker/2.31.9
+echo "Starting run at: `date`"
+gff3_merge  -n -s -d  Mas3.8_Pilon1_dedupe99.5_edNm_master_datastore_index.log >  Mas3.8_Pilon1_dedupe99.5_edNm.all_noseq.gff
+echo "Program finished with exit code $? at: `date`"
+
+PRODUCED FILES
+Mas3.8_Pilon1_dedupe99.5_edNm.all_noseq_maker1.gff
+
+
+
+$ awk '{ if ($2 == "protein2genome") print $0 }' Mas3.8_Pilon1_dedupe99.5_edNm.all.noseq.gff > M6_Mas3.8all_noseq_maker1.protein2genome.gff
+
+$ awk '{ if ($2 == "est2genome") print $0 }' Mas3.8_Pilon1_dedupe99.5_edNm.all.noseq.gff > M6_Mas3.8all_noseq_maker1.est2genome.gff
+$ awk '{ if ($2 ~ "repeat") print $0 }' Mas3.8_Pilon1_dedupe99.5_edNm.all.noseq.gff > M6_Mas3.8all_noseq_maker1.repeats.gff
+
+$ pwd /home/sjossey/projects/rrg-marke/sjossey/MakerM6_3.2/Mas3.8_Pilon1_dedupe99.5_edNm.maker.output
+-----
+SNAP
+------
+$ mkdir snap1 && cd snap1
+
+$ module load nixpkgs/16.09  gcc/7.3.0  openmpi/3.1.2 maker/2.31.9
+
+$ maker2zff -x 0.25 -l 50 -d ../Mas3.8_Pilon1_dedupe99.5_edNm_master_datastore_index.log
+
+$ mv genome.ann Maker1_zff.length50_aed0.25.ann
+$ mv genome.dna  Maker1_zff.length50_aed0.25.dna
+
+PRODUCED FILES:
+Maker1_zff.length50_aed0.25.ann
+Maker1_zff.length50_aed0.25.dna
+
+$ fathom Maker1_zff.length50_aed0.25.ann  Maker1_zff.length50_aed0.25.dna -gene-stats > gene-stats.log
+
+MODEL5613 skipped due to errors
+MODEL28918 skipped due to errors
+MODEL1864 skipped due to errors
+
+PRODUCED FILES:
+gene-stats.log
+
+
+$ cat gene-stats.log
+1997 sequences
+0.430523 avg GC fraction (min=0.339372 max=0.594069)
+10937 genes (plus=5553 minus=5384)
+833 (0.076163) single-exon
+10104 (0.923837) multi-exon
+173.004654 mean exon (min=1 max=10050)
+1530.212769 mean intron (min=20 max=14618)
+
+$ fathom Maker1_zff.length50_aed0.25.ann  Maker1_zff.length50_aed0.25.dna -validate > validate.log
+10940 genes, 10937 OK, 4617 warnings, 3 errors
+
+$ grep -vwE " MODEL5613" Maker1_zff.length50_aed0.25.ann > Maker1_zff.length50_aed0.25_1.ann
+
+$ grep -vwE " MODEL28918" Maker1_zff.length50_aed0.25._1.ann > Maker1_zff.length50_aed0.25_2.ann
+
+$ grep -vwE " MODEL1864" Maker1_zff.length50_aed0.25._2.ann > Maker1_zff.length50_aed0.25_3.ann
+
+$ fathom Maker1_zff.length50_aed0.25_3.ann  Maker1_zff.length50_aed0.25.dna -validate > validate.log
+10937 genes, 10937 OK, 4614 warnings, 0 errors
+
+$ fathom Maker1_zff.length50_aed0.25_3.ann  Maker1_zff.length50_aed0.25.dna -categorize 1000 > categorize.log
+
+$ fathom uni.ann uni.dna -export 1000 -plus > uni-plus.log
+
+$ mkdir params
+
+$ cd params
+
+$ forge ../export.ann ../export.dna > ../forge.log
+
+cd ..
+
+$ hmm-assembler.pl Maker1_zff.length50_aed0.25 params >  Maker1_zff.length50_aed0.25.hmm
+
+-----------------
+AUGUSTUS (BUSCO)
+-----------------
+
+config.ini
+
+# BUSCO specific configuration
+# It overrides default values in code and dataset cfg, and is overridden by arguments in command line
+# Uncomment lines when appropriate
+[busco]
+# Input file
+;in = ./sample_data/target.fa
+# Run name, used in output files and folder
+;out = SAMPLE
+# Where to store the output directory
+;out_path = ./sample_data
+# Path to the BUSCO dataset
+;lineage_path = ./sample_data/example
+# Which mode to run (genome / protein / transcriptome)
+;mode = genome
+# How many threads to use for multithreaded steps
+;cpu = 1
+# Domain for augustus retraining, eukaryota or prokaryota
+# Do not change this unless you know exactly why !!!
+;domain = eukaryota
+# Force rewrite if files already exist (True/False)
+;force = False
+# Restart mode (True/False)
+;restart = True
+# Blast e-value
+;evalue = 1e-3
+# Species to use with augustus, for old datasets only
+;species = human
+# Augustus extra parameters
+# Use single quotes, like this: '--param1=1 --param2=2'
+;augustus_parameters = ''
+# Tmp folder
+;tmp_path = ./tmp/
+# How many candidate regions (contigs, scaffolds) to consider for each BUSCO
+;limit = 3
+# Augustus long mode for retraining (True/False)
+;long = False
+# Quiet mode (True/False)
+;quiet = False
+# Debug logs (True/False), it needs Quiet to be False
+;debug = True
+# tar gzip output files (True/False)
+;gzip = False
+# Force single core for the tblastn step
+;blast_single_core = True
+
+[tblastn]
+# path to tblastn
+path = /cvmfs/soft.mugqic/CentOS6/software/blast/ncbi-blast-2.3.0+/bin/
+
+[makeblastdb]
+# path to makeblastdb
+path = /cvmfs/soft.mugqic/CentOS6/software/blast/ncbi-blast-2.3.0+/bin/
+
+[augustus]
+# path to augustus
+path =/home/sjossey/scratch/MakerM6_3.2/augustus/augustus/3.2.3/bin/
+
+[etraining]
+# path to augustus etraining
+path =/home/sjossey/scratch/MakerM6_3.2/augustus/augustus/3.2.3/bin/
+
+# path to augustus perl scripts, redeclare it for each new script
+[gff2gbSmallDNA.pl]
+path =/home/sjossey/scratch/MakerM6_3.2/augustus/augustus/3.2.3/scripts/
+[new_species.pl]
+path =/home/sjossey/scratch/MakerM6_3.2/augustus/augustus/3.2.3/scripts/
+[optimize_augustus.pl]
+path =/home/sjossey/scratch/MakerM6_3.2/augustus/augustus/3.2.3/scripts/
+
+[hmmsearch]
+# path to HMMsearch executable
+path = /cvmfs/soft.mugqic/CentOS6/software/hmmer/hmmer-3.1b2/bin/
+
+[Rscript]
+# path to Rscript, if you wish to use the plot tool
+path = /cvmfs/soft.mugqic/CentOS6/software/R_Bioconductor/R_Bioconductor-3.4.2_3.6/bin/
+----------
+RUN BUSCO
+----------
+
+#!/bin/bash
+#SBATCH --account=rrg-marke
+#SBATCH --time=0-06:00
+#SBATCH --mem=500G
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=32
+#SBATCH --job-name=BUSCO_Mas3.8_Pil_ded99.5_edNm_July5
+#SBATCH --output output_%x_%j.txt
+#SBATCH --error errors_%x_%j.txt
+#SBATCH --mail-type=ALL
+#SBATCH --mail-user=@gmail.com
+
+echo "Starting run at: `date`"
+
+module load nixpkgs/16.09 gcc/5.4.0 openmpi/2.0.2 busco/3.0.2
+module load python/3.7.0
+
+export AUGUSTUS_CONFIG_PATH=/home/sjossey/scratch/MakerM6_3.2/augustus/augustus/3.2.3/config/
+export BUSCO_CONFIG_FILE=./config.ini
+
+run_BUSCO.py -i /home/sjossey/scratch/Post_Masurca_all_pac+Ill2/Mas3.8_Pilon1_dedupe99.5_edNm.fa -o Mas3.8_Pilon1_dedupe99.5_edNm_July2019  -l /home/sjossey/projects/rrg-marke/sjossey/mammalia_odb9  -m geno --cpu 32
+
+echo "Program finished with exit code $? at: `date`"
+
+
+PRODUCED FOLDERS:
+augustus_output
+single_copy_busco_sequences
+short_summary_Mas3.8_Pilon1_dedupe99.5_edNm_July2019.txt
+full_table_Mas3.8_Pilon1_dedupe99.5_edNm_July2019.tsv
+missing_busco_list_Mas3.8_Pilon1_dedupe99.5_edNm_July2019.tsv
+hmmer_output
+blast_output
+
+$ cd augustus_output/
+
+$ ls 
+retraining_parameters predicted_genes extracted_proteins augustus.log  training_set_Mas3.8_Pilon1_dedupe99.5_edNm_July2019.txt gb gffs
+
+
+$ cp retraining_parameters BUSCO_Mas3.8_Pilon1_dedupe99.5_edNm_July2019_3024656873
+
+$ mv BUSCO_Mas3.8_Pilon1_dedupe99.5_edNm_July2019_3024656873
+ /home/sjossey/scratch/MakerM6_3.2/augustus/augustus/3.2.3/config/species
+
+========================
+MAKER 2nd iteration 
+=======================
+
+maker_opts.log
+#-----Genome (these are always required)
+genome=/scratch/sjossey/Post_Masurca_all_pac+Ill2/Mas3.8_Pilon1_dedupe99.5_edNm.fa #genome sequence (fasta file or fasta embeded in GFF3 file)
+organism_type=eukaryotic #eukaryotic or prokaryotic. Default is eukaryotic
+
+#-----Re-annotation Using MAKER Derived GFF3
+maker_gff= #MAKER derived GFF3 file
+est_pass=0 #use ESTs in maker_gff: 1 = yes, 0 = no
+altest_pass=0 #use alternate organism ESTs in maker_gff: 1 = yes, 0 = no
+protein_pass=0 #use protein alignments in maker_gff: 1 = yes, 0 = no
+rm_pass=0 #use repeats in maker_gff: 1 = yes, 0 = no
+model_pass=0 #use gene models in maker_gff: 1 = yes, 0 = no
+pred_pass=0 #use ab-initio predictions in maker_gff: 1 = yes, 0 = no
+other_pass=0 #passthrough anyything else in maker_gff: 1 = yes, 0 = no
+
+#-----EST Evidence (for best results provide a file for at least one)
+est= #set of ESTs or assembled mRNA-seq in fasta format
+altest= #EST/cDNA sequence file in fasta format from an alternate organism
+est_gff=/project/6019310/sjossey/MakerM6_3.2/Mas3.8_Pilon1_dedupe99.5_edNm.maker.output/M6_Mas3.8all_noseq_maker1.est2genome.gff #aligned ESTs or mRNA-seq from an external GFF3 file
+altest_gff= #aligned ESTs from a closly relate species in GFF3 format
+
+#-----Protein Homology Evidence (for best results provide a file for at least one)
+protein=  #protein sequence file in fasta format (i.e. from mutiple oransisms)
+protein_gff=/project/6019310/sjossey/MakerM6_3.2/Mas3.8_Pilon1_dedupe99.5_edNm.maker.output/M6_Mas3.8all_noseq_maker1.protein2genome.gff  #aligned protein homology evidence from an external GFF3 file
+
+#-----Repeat Masking (leave values blank to skip repeat masking)
+model_org= #select a model organism for RepBase masking in RepeatMasker
+rmlib= #provide an organism specific repeat library in fasta format for RepeatMasker
+repeat_protein= #provide a fasta file of transposable element proteins for RepeatRunner
+rm_gff=/project/6019310/sjossey/MakerM6_3.2/Mas3.8_Pilon1_dedupe99.5_edNm.maker.output/M6_Mas3.8all_noseq_maker1.repeats.gff #pre-identified repeat elements from an external GFF3 file
+prok_rm=0 #forces MAKER to repeatmask prokaryotes (no reason to change this), 1 = yes, 0 = no
+softmask=1 #use soft-masking rather than hard-masking in BLAST (i.e. seg and dust filtering)
+
+#-----Gene Prediction
+snaphmm=/home/sjossey/projects/rrg-marke/sjossey/MakerM6_3.2/Mas3.8_Pilon1_dedupe99.5_edNm.maker.output/snap1/Maker1_zff.length50_aed0.25.hmm #SNAP HMM file
+gmhmm= #GeneMark HMM file
+augustus_species=BUSCO_Mas3.8_Pilon1_dedupe99.5_edNm_July2019_3024656873 #Augustus gene prediction species model
+fgenesh_par_file= #FGENESH parameter file
+pred_gff= #ab-initio predictions from an external GFF3 file
+model_gff= #annotated gene models from an external GFF3 file (annotation pass-through)
+est2genome=0 #infer gene predictions directly from ESTs, 1 = yes, 0 = no
+protein2genome=0 #infer predictions from protein homology, 1 = yes, 0 = no
+trna=0 #find tRNAs with tRNAscan, 1 = yes, 0 = no
+snoscan_rrna= #rRNA file to have Snoscan find snoRNAs
+unmask=0 #also run ab-initio prediction programs on unmasked sequence, 1 = yes, 0 = no
+
+#-----Other Annotation Feature Types (features MAKER doesn't recognize)
+other_gff= #extra features to pass-through to final MAKER generated GFF3 file
+
+#-----External Application Behavior Options
+alt_peptide=C #amino acid used to replace non-standard amino acids in BLAST databases
+cpus=64 #max number of cpus to use in BLAST and RepeatMasker (not for MPI, leave 1 when using MPI)
+
+#-----MAKER Behavior Options
+max_dna_len=100000 #length for dividing up contigs into chunks (increases/decreases memory usage)
+min_contig=10000 #skip genome contigs below this length (under 10kb are often useless)
+
+pred_flank=200 #flank for extending evidence clusters sent to gene predictors
+pred_stats=1 #report AED and QI statistics for all predictions as well as models
+AED_threshold=1 #Maximum Annotation Edit Distance allowed (bound by 0 and 1)
+min_protein=0 #require at least this many amino acids in predicted proteins
+alt_splice=0 #Take extra steps to try and find alternative splicing, 1 = yes, 0 = no
+always_complete=0 #extra steps to force start and stop codons, 1 = yes, 0 = no
+map_forward=0 #map names and attributes forward from old GFF3 genes, 1 = yes, 0 = no
+keep_preds=0 #Concordance threshold to add unsupported gene prediction (bound by 0 and 1)
+
+split_hit=20000 #length for the splitting of hits (expected max intron size for evidence alignments)
+single_exon=0 #consider single exon EST evidence when generating annotations, 1 = yes, 0 = no
+single_length=250 #min length required for single exon ESTs if 'single_exon is enabled'
+correct_est_fusion=0 #limits use of ESTs in annotation to avoid fusion genes
+
+tries=2 #number of times to try a contig if there is a failure for some reason
+clean_try=0 #remove all data from previous run before retrying, 1 = yes, 0 = no
+clean_up=0 #removes theVoid directory with individual analysis files, 1 = yes, 0 = no
+TMP= #specify a directory other than the system default temporary directory for temporary files
+
+maker_bopts.ctl
+#-----BLAST and Exonerate Statistics Thresholds
+blast_type=ncbi+ #set to 'ncbi+', 'ncbi' or 'wublast'
+
+pcov_blastn=0.8 #Blastn Percent Coverage Threhold EST-Genome Alignments
+pid_blastn=0.85 #Blastn Percent Identity Threshold EST-Genome Aligments
+eval_blastn=1e-10 #Blastn eval cutoff
+bit_blastn=40 #Blastn bit cutoff
+depth_blastn=0 #Blastn depth cutoff (0 to disable cutoff)
+
+pcov_blastx=0.5 #Blastx Percent Coverage Threhold Protein-Genome Alignments
+pid_blastx=0.4 #Blastx Percent Identity Threshold Protein-Genome Aligments
+eval_blastx=1e-06 #Blastx eval cutoff
+bit_blastx=30 #Blastx bit cutoff
+depth_blastx=0 #Blastx depth cutoff (0 to disable cutoff)
+
+pcov_tblastx=0.8 #tBlastx Percent Coverage Threhold alt-EST-Genome Alignments
+pid_tblastx=0.85 #tBlastx Percent Identity Threshold alt-EST-Genome Aligments
+eval_tblastx=1e-10 #tBlastx eval cutoff
+bit_tblastx=40 #tBlastx bit cutoff
+depth_tblastx=0 #tBlastx depth cutoff (0 to disable cutoff)
+
+pcov_rm_blastx=0.5 #Blastx Percent Coverage Threhold For Transposable Element Masking
+pid_rm_blastx=0.4 #Blastx Percent Identity Threshold For Transposbale Element Masking
+eval_rm_blastx=1e-06 #Blastx eval cutoff for transposable element masking
+bit_rm_blastx=30 #Blastx bit cutoff for transposable element masking
+
+ep_score_limit=20 #Exonerate protein percent of maximal score threshold
+en_score_limit=20 #Exonerate nucleotide percent of maximal score threshold
+
+maker_exe.ctl
+#-----Location of Executables Used by MAKER/EVALUATOR
+makeblastdb=/cvmfs/soft.computecanada.ca/easybuild/software/2017/avx2/Compiler/gcc5.4/blast+/2.6.0/bin/makeblastdb #location of NCBI+ makeblastdb executable
+blastn=/cvmfs/soft.computecanada.ca/easybuild/software/2017/avx2/Compiler/gcc5.4/blast+/2.6.0/bin/blastn #location of NCBI+ blastn executable
+blastx=/cvmfs/soft.computecanada.ca/easybuild/software/2017/avx2/Compiler/gcc5.4/blast+/2.6.0/bin/blastx #location of NCBI+ blastx executable
+tblastx=/cvmfs/soft.computecanada.ca/easybuild/software/2017/avx2/Compiler/gcc5.4/blast+/2.6.0/bin/tblastx #location of NCBI+ tblastx executable
+formatdb= #location of NCBI formatdb executable
+blastall= #location of NCBI blastall executable
+xdformat= #location of WUBLAST xdformat executable
+blasta= #location of WUBLAST blasta executable
+RepeatMasker=/home/sjossey/scratch/RepeatMasker/RepeatMasker #location of RepeatMasker executable
+exonerate=/cvmfs/soft.computecanada.ca/easybuild/software/2017/avx2/Compiler/gcc5.4/exonerate/2.4.0/bin/exonerate #location of exonerate executable
+
+#-----Ab-initio Gene Prediction Algorithms
+snap=/cvmfs/soft.computecanada.ca/easybuild/software/2017/avx2/Compiler/gcc5.4/snap/2013-11-29/bin/snap #location of snap executable
+gmhmme3= #location of eukaryotic genemark executable
+gmhmmp= #location of prokaryotic genemark executable
+augustus=/home/sjossey/scratch/MakerM6_3.2/augustus/augustus/3.2.3/bin/augustus #location of augustus executable
+fgenesh= #location of fgenesh executable
+tRNAscan-SE= #location of trnascan executable
+snoscan=/home/sjossey/bin/snoscan #location of snoscan executable
+
+#-----Other Algorithms
+probuild= #location of probuild executable (required for genemark)
+
+
+Maker5_2nd_iteration.sh
+
+#!/bin/bash
+#SBATCH --account=rrg-marke
+#SBATCH -t 5-00:00
+#SBATCH --mem=0G
+#SBATCH --nodes=2
+#SBATCH --ntasks-per-node=32
+#SBATCH --job-name=Maker_Itter2
+#SBATCH -o output_%x_%j.txt
+#SBATCH -e errors_%x_%j.txt
+#SBATCH --mail-type=ALL
+#SBATCH --mail-user=@gmail.com
+
+export AUGUSTUS_CONFIG_PATH=/home/sjossey/scratch/MakerM6_3.2/augustus/augustus/3.2.3/config/
+module load nixpkgs/16.09 gcc/5.4.0 openmpi/2.1.1 maker/2.31.9
+
+echo "Starting run at: `date`"
+maker -base Maker5_M6_Mas3.8-snap1_Aug_qkBUSCO
+echo "Program finished with exit code $? at: `date`"
+
+
+$ tail errors_Maker5_M6Mas3.8-snp1_Aug_qkBSCO_Aug1_27150804.txt
+adding statistics to annotations
+Calculating annotation quality statistics
+choosing best annotation set
+Choosing best annotations
+processing chunk output
+processing contig output
+
+
+Maker is now finished!!!
+
+
+gff3_merge.sh
+
+#!/bin/bash
+#SBATCH --account=rrg-marke
+#SBATCH -t 0-03:00
+#SBATCH --mem=500G
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=32
+#SBATCH --job-name=gff3_merge
+#SBATCH -o output_%x_%j.txt
+#SBATCH -e errors_%x_%j.txt
+#SBATCH --mail-type=ALL
+#SBATCH --mail-user=@gmail.com
+
+
+module load nixpkgs/16.09  gcc/7.3.0  openmpi/3.1.2 maker/2.31.9
+echo "Starting run at: `date`"
+gff3_merge -d  Maker5_M6_Mas3.8-snap1_Aug_qkBUSCO_master_datastore_index.log
+echo "Program finished with exit code $? at: `date`"
+
+
+PRODUCED FILES
+Maker5_M6_Mas3.8-snap1_Aug_qkBUSCO.all.gff
+
+
+fasta_merge.sh
+#!/bin/bash
+#SBATCH --account=rrg-marke
+#SBATCH -t 0-02:00
+#SBATCH --mem=500G
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=32
+#SBATCH --job-name=fasta_merge
+#SBATCH -o output_%x_%j.txt
+#SBATCH -e errors_%x_%j.txt
+#SBATCH --mail-type=ALL
+#SBATCH --mail-user=@gmail.com
+
+
+module load nixpkgs/16.09  gcc/7.3.0  openmpi/3.1.2 maker/2.31.9
+echo "Starting run at: `date`"
+fasta_merge -d Maker5_M6_Mas3.8-snap1_Aug_qkBUSCO_master_datastore_index.log
+echo "Program finished with exit code $? at: `date`"
+
+
+Produced files:
+Maker5_M6_Mas3.8-snap1_Aug_qkBUSCO.all.maker.snap_masked.transcripts.fasta
+Maker5_M6_Mas3.8-snap1_Aug_qkBUSCO.all.maker.augustus_masked.proteins.fasta
+Maker5_M6_Mas3.8-snap1_Aug_qkBUSCO.all.maker.augustus_masked.transcripts.fasta
+Maker5_M6_Mas3.8-snap1_Aug_qkBUSCO.all.maker.proteins.fasta
+Maker5_M6_Mas3.8-snap1_Aug_qkBUSCO.all.maker.transcripts.fasta
+Maker5_M6_Mas3.8-snap1_Aug_qkBUSCO.all.maker.non_overlapping_ab_initio.proteins.fasta
+Maker5_M6_Mas3.8-snap1_Aug_qkBUSCO.all.maker.non_overlapping_ab_initio.transcripts.fasta
+Maker5_M6_Mas3.8-snap1_Aug_qkBUSCO.all.maker.snap_masked.proteins.fasta
+
+-------------------------------------------------------------------
+RENAME OF IDS THAT MAKER SETS BY DEFAULT FOR GENES AND TRANSCRIPTS
+-------------------------------------------------------------------
+$ maker_map_ids --prefix BmmATL_ --justify 6 Maker5_M6_Mas3.8-snap1_Aug_qkBUSCO.all.gff > Maker_GFF.all.id.map
+
+$ cp  Maker5_M6_Mas3.8-snap1_Aug_qkBUSCO.all.gff Maker5_nameChange_all.gff
+$ map_gff_ids Maker_GFF.all.id.map Maker5_nameChange_all.gff
+
+$ cp Maker5_M6_Mas3.8-snap1_Aug_qkBUSCO.all.maker.transcripts.fasta Maker5_nameChange.all.maker.transcripts.fasta
+$ map_fasta_ids Maker_GFF.all.id.map Maker5_nameChange.all.maker.transcripts.fasta
+
+$ cp Maker5_M6_Mas3.8-snap1_Aug_qkBUSCO.all.maker.proteins.fasta Maker5_nameChange.all.maker.proteins.fasta
+$ map_fasta_ids Maker_GFF.all.id.map Maker5_nameChange.all.maker.proteins.fasta
+
+=====================================================================
+FUNTIONAL ANNOTATION
+=====================================================================
+Blastp_uniprot_sprot_fmt_10.sh
+
+#!/bin/bash
+#SBATCH --account=rrg-marke
+#SBATCH -t 0-02:00
+#SBATCH --mem=500G
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=32
+#SBATCH --job-name=Blastp_uniprot_sprot_fmt_10
+#SBATCH -o output_%x_%j.txt
+#SBATCH -e errors_%x_%j.txt
+#SBATCH --mail-type=ALL
+#SBATCH --mail-user=@gmail.com
+
+module load nixpkgs/16.09  gcc/7.3.0 blast+/2.7.1
+
+echo "Starting run at: `date`"
+
+blastp -query Maker5_nameChange.all.maker.proteins.fasta -db uniprot_sprot.fasta  -num_threads 32 -evalue 1e-6  -num_alignments 2  -outfmt "10 std salltitles" -out Maker5_nameCh.all.maker.proteins_uniprot_sprot.blastp_fmt_10.out
+
+echo "Program finished with exit code $? at: `date`"
+
+$ sed 's/,/\t /' Maker5_nameCh.all.maker.proteins_uniprot_sprot.blastp_fmt_10.out> Maker5_nameCh.all.maker.proteins_uniprot_sprot.blastp_fmt_10_sep_.out
+
+$ awk '{print $1 }'  Maker5_nameCh.all.maker.proteins_uniprot_sprot.blastp_fmt_10_sep_.out|sort|uniq|wc -l
+TOTAL ANNOTATED PROTEIN
+
+

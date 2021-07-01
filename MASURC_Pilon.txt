@@ -71,7 +71,7 @@ mega_reads_assemble_cluster.sh OK
 creating script file for the actions...done.
 execute assemble.sh to run assembly
 
-Masurca1_assembly_Sept12.sh
+Masurca_assembly.sh
 
 #!/bin/bash
 #SBATCH --account=rrg-marke
@@ -79,7 +79,7 @@ Masurca1_assembly_Sept12.sh
 #SBATCH --mem=1300G
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=32
-#SBATCH --job-name=Masurca1_assembly_Sept12
+#SBATCH --job-name=Masurca1_assembly
 #SBATCH --output output_%x_%j.txt
 #SBATCH --error errors_%x_%j.txt
 #SBATCH --mail-type=ALL
@@ -91,272 +91,18 @@ echo "Starting run at: `date`"
 ./assemble.sh
 echo "Program finished with exit code $? at: `date`"
 
-###Oct 9
-SLURM Job_id=11784440 Name=Masurca1_assembly_Sept12 Failed, Run time 22-00:00:22, TIMEOUT, ExitCode 0
 
-$ cat output_Masurca1_assembly_Sept12_11784440.txt
 
-[Mon Sep 17 01:54:33 PDT 2018] Processing pe library reads
-[Mon Sep 17 04:08:45 PDT 2018] Average PE read length 151
-[Mon Sep 17 04:08:50 PDT 2018] Using kmer size of 99 for the graph
-[Mon Sep 17 04:08:50 PDT 2018] MIN_Q_CHAR: 33
-WARNING: JF_SIZE set too low, increasing JF_SIZE to at least 18238375661, this automatic increase may be not enough!
-[Mon Sep 17 04:08:50 PDT 2018] Creating mer database for Quorum
-[Mon Sep 17 06:38:48 PDT 2018] Error correct PE
-[Mon Sep 17 13:43:55 PDT 2018] Estimating genome size
-[Mon Sep 17 14:51:34 PDT 2018] Estimated genome size: 3057885012
-[Mon Sep 17 14:51:34 PDT 2018] Creating k-unitigs with k=99
-[Mon Sep 17 19:28:15 PDT 2018] Computing super reads from PE
-[Tue Sep 18 09:36:20 PDT 2018] Using CABOG from /cvmfs/soft.computecanada.ca/easybuild/software/2017/avx2/Compiler/gcc5.4/masurca/3.2.8/bin/../CA8/Linux-amd64/bin
-[Tue Sep 18 09:36:20 PDT 2018] Running mega-reads correction/assembly
-[Tue Sep 18 09:36:20 PDT 2018] Using mer size 15 for mapping, B=17, d=0.029
-[Tue Sep 18 09:36:20 PDT 2018] Estimated Genome Size 3057885012
-[Tue Sep 18 09:36:20 PDT 2018] Estimated Ploidy 1
-[Tue Sep 18 09:36:20 PDT 2018] Using 32 threads
-[Tue Sep 18 09:36:20 PDT 2018] Output prefix mr.41.15.17.0.029
-[Tue Sep 18 09:36:21 PDT 2018] Pacbio coverage >20x, using 20x of the longest reads
-[Tue Sep 18 09:44:57 PDT 2018] Reducing super-read k-mer size
-[Tue Sep 18 12:17:40 PDT 2018] Mega-reads pass 1
-[Tue Sep 18 12:17:40 PDT 2018] Running locally in 1 batch
-[Wed Sep 26 10:29:09 PDT 2018] Mega-reads pass 2
-[Wed Sep 26 10:29:09 PDT 2018] Running locally in 1 batch
-[Sat Sep 29 11:35:56 PDT 2018] Refining alignments
-[Sat Sep 29 14:25:51 PDT 2018] Joining
-[Sat Sep 29 16:08:01 PDT 2018] Gap consensus
-[Sat Sep 29 16:27:37 PDT 2018] Generating assembly input files
-[Sat Sep 29 23:08:12 PDT 2018] Coverage threshold for splitting unitigs is 28 minimum ovl 250
-[Sat Sep 29 23:08:12 PDT 2018] Running assembly
-
-$ tail -3  errors_Masurca1_assembly_Sept12_11784440.txt
-
-libgomp: Invalid value for environment variable OMP_NUM_THREADS
-slurmstepd: error: *** JOB 11784440 ON cdr476 CANCELLED AT 2018-10-09T01:54:52 DUE TO TIME LIMIT ***
-./assemble.sh: line 160: 58785 Killed                  /cvmfs/soft.computecanada.ca/easybuild/software/2017/avx2/Compiler/gcc5.4/masurca/3.2.8/bin/mega_reads_assemble_cluster.sh -Pb 300000000 -q all.q -G 0 -C 20 -t 32 -e $ESTIMATED_GENOME_SIZE -m work1 -p /home/sjossey/scratch/Pacbio_all/pacbio_all3_cat.fa -a /cvmfs/soft.computecanada.ca/easybuild/software/2017/avx2/Compiler/gcc5.4/masurca/3.2.8/bin/../CA8/Linux-amd64/bin -o "   cgwErrorRate=0.15" -B 17 -D 0.029
-
-IT FAILED AFTER IT RAN OUT OF TIME SO RESTARTED MUSURCA
-
-[sjossey@cedar5 Masurca_all_pac+Ill2]$ module load  nixpkgs/16.09  gcc/5.4.0  masurca/3.2.8
-[sjossey@cedar5 Masurca_all_pac+Ill2]$ masurca conf_masAll.txt
-Verifying PATHS...
-jellyfish OK
-runCA OK
-createSuperReadsForDirectory.perl OK
-nucmer OK
-mega_reads_assemble_cluster.sh OK
-creating script file for the actions...done.
-execute assemble.sh to run assembly
-
-Masurca1_assembly_Oct.sh
-
-#!/bin/bash
-#SBATCH --account=rrg-marke
-#SBATCH -t 12-00:00
-#SBATCH --mem=1300G
-#SBATCH --nodes=1
-#SBATCH --ntasks-per-node=32
-#SBATCH --job-name=Masurca1_assembly_Sept12
-#SBATCH --output output_%x_%j.txt
-#SBATCH --error errors_%x_%j.txt
-#SBATCH --mail-type=ALL
-#SBATCH --mail-user=@gmail.com
-export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
-
-module load  nixpkgs/16.09  gcc/5.4.0  masurca/3.2.8
-echo "Starting run at: `date`"
-./assemble.sh
-echo "Program finished with exit code $? at: `date`"
-###Oct 23
-SLURM Job_id=12489267 Name=Masurca1_assembly_Sept12 Ended, Run time 3-12:20:11, COMPLETED, ExitCode 0
-
-$ cat output_Masurca1_assembly_Sept12_12489267.txt
-Starting run at: Sat Oct 20 02:02:47 PDT 2018
-[Sat Oct 20 02:02:48 PDT 2018] Processing pe library reads
-[Sat Oct 20 02:02:50 PDT 2018] Average PE read length 151
-[Sat Oct 20 02:02:54 PDT 2018] Using kmer size of 99 for the graph
-[Sat Oct 20 02:02:54 PDT 2018] MIN_Q_CHAR: 33
-WARNING: JF_SIZE set too low, increasing JF_SIZE to at least 18238375661, this automatic increase may be not enough!
-[Sat Oct 20 02:02:54 PDT 2018] Estimated genome size: 3057885012
-[Sat Oct 20 02:02:54 PDT 2018] Computing super reads from PE
-[Sat Oct 20 02:02:55 PDT 2018] Using CABOG from /cvmfs/soft.computecanada.ca/easybuild/software/2017/avx2/Compiler/gcc5.4/masurca/3.2.8/bin/../CA8/Linux-amd64/bin
-[Sat Oct 20 02:02:55 PDT 2018] Running mega-reads correction/assembly
-[Sat Oct 20 02:02:55 PDT 2018] Using mer size 15 for mapping, B=17, d=0.029
-[Sat Oct 20 02:02:55 PDT 2018] Estimated Genome Size 3057885012
-[Sat Oct 20 02:02:55 PDT 2018] Estimated Ploidy 1
-[Sat Oct 20 02:02:55 PDT 2018] Using 32 threads
-[Sat Oct 20 02:02:55 PDT 2018] Output prefix mr.41.15.17.0.029
-[Sat Oct 20 02:02:55 PDT 2018] Pacbio coverage >20x, using 20x of the longest reads
-[Sat Oct 20 02:02:56 PDT 2018] Coverage threshold for splitting unitigs is 28 minimum ovl 250
-[Sat Oct 20 02:02:56 PDT 2018] Running assembly
-[Tue Oct 23 12:16:18 PDT 2018] Mega-reads initial assembly complete
-[Tue Oct 23 12:16:18 PDT 2018] Closing gaps in scaffolds
-[Tue Oct 23 12:26:24 PDT 2018] Gap closing done
-[Tue Oct 23 12:26:24 PDT 2018] Removing redundant scaffolds
-[Tue Oct 23 14:22:53 PDT 2018] Assembly complete, final scaffold sequences are in CA.mr.41.15.17.0.029/final.genome.scf.fasta
-[Tue Oct 23 14:22:53 PDT 2018] All done
-[Tue Oct 23 14:22:53 PDT 2018] Final stats for CA.mr.41.15.17.0.029/final.genome.scf.fasta
+tail -n 6  output_Masurca1_assembly.txt
 N50 1461574
 Sequence 2500238307
 Average 219204
 E-size 2.10952e+06
 Count 11406
-Program finished with exit code 0 at: Tue Oct 23 14:22:54 PDT 2018
 
-$ tail -152 CA.mr.41.15.17.0.029.log
-/usr/bin/env perl /cvmfs/soft.computecanada.ca/easybuild/software/2017/avx2/Compiler/gcc5.4/masurca/3.2.8/CA8/Linux-amd64/bin/caqc.pl -euid  /home/sjossey/scratch/Masurca_all_pac+Ill2/CA.mr.41.15.17.0.029/9-terminator/genome.asm
-[Scaffolds]
-TotalScaffolds                  15899
-TotalContigsInScaffolds         16828
-MeanContigsPerScaffold          1.06
-MinContigsPerScaffold           1
-MaxContigsPerScaffold           5
 
-TotalBasesInScaffolds           2570010314
-MeanBasesInScaffolds            161646
-MinBasesInScaffolds             1317
-MaxBasesInScaffolds             9278891
-N25ScaffoldBases                3189624
-N50ScaffoldBases                1555378
-N75ScaffoldBases                665431
-ScaffoldAt1000000000            2051438
-ScaffoldAt2000000000            577215
-
-TotalSpanOfScaffolds            2572125308
-MeanSpanOfScaffolds             161779
-MinScaffoldSpan                 1317
-MaxScaffoldSpan                 9285350
-IntraScaffoldGaps               929
-2KbScaffolds                    15773
-2KbScaffoldSpan                 2571916514
-MeanSequenceGapLength           2277
-
-[Top5Scaffolds=contigs,size,span,avgContig,avgGap,EUID]
-0=2,9278891,9285350,4639446,6459,7180000042611
-1=2,9216033,9223952,4608016,7919,7180000042439
-2=4,8504031,8507837,2126008,1269,7180000045955
-3=1,8261233,8261233,8261233,0,7180000042435
-4=1,7895545,7895545,7895545,0,7180000042413
-total=10,43155733,43173917,4315573,3637
-
-[Contigs]
-TotalContigsInScaffolds         16828
-TotalBasesInScaffolds           2570010314
-TotalVarRecords                 344677
-MeanContigLength                152722
-MinContigLength                 1317
-MaxContigLength                 8648589
-N25ContigBases                  2491005
-N50ContigBases                  1212439
-N75ContigBases                  504935
-ContigAt1000000000              1639099
-ContigAt2000000000              454638
-
-[BigContigs_greater_10000]
-TotalBigContigs                 9686
-BigContigLength                 2530451125
-MeanBigContigLength             261248
-MinBigContig                    10005
-MaxBigContig                    8648589
-BigContigsPercentBases          98.46
-
-[SmallContigs]
-TotalSmallContigs               7142
-SmallContigLength               39559189
-MeanSmallContigLength           5539
-MinSmallContig                  1317
-MaxSmallContig                  9999
-SmallContigsPercentBases        1.54
-
-[DegenContigs]
-TotalDegenContigs               4180
-DegenContigLength               9420775
-DegenVarRecords                 0
-MeanDegenContigLength           2254
-MinDegenContig                  285
-MaxDegenContig                  31487
-DegenPercentBases               0.37
-
-[Top5Contigs=reads,bases,EUID]
-0=12977,8648589,7180000021432
-1=11730,8261233,7180000021428
-2=13044,7895545,7180000021405
-3=12665,7674950,7180000021406
-4=10857,7553576,7180000021458
-total=61273,40033893
-
-[UniqueUnitigs]
-TotalUUnitigs                   17225
-MinUUnitigLength                404
-MaxUUnitigLength                8648589
-MeanUUnitigLength               149308
-SDUUnitigLength                 490483
-
-[Surrogates]
-TotalSurrogates                 0
-SurrogateInstances              0
-SurrogateLength
-SurrogateInstanceLength         0
-UnPlacedSurrReadLen             0
-PlacedSurrReadLen               0
-MinSurrogateLength              0
-MaxSurrogateLength              0
-MeanSurrogateLength             0
-SDSurrogateLength               0
-
-[Mates]
-ReadsWithNoMate                 3453321(61.72%)
-ReadsWithGoodMate               595062(10.64%)
-ReadsWithBadShortMate           4378(0.08%)
-ReadsWithBadLongMate            4828(0.09%)
-ReadsWithSameOrientMate         61684(1.10%)
-ReadsWithOuttieMate             1808(0.03%)
-ReadsWithBothChaffMate          753112(13.46%)
-ReadsWithChaffMate              548552(9.80%)
-ReadsWithBothDegenMate          1082(0.02%)
-ReadsWithDegenMate              9684(0.17%)
-ReadsWithBothSurrMate           0(0.00%)
-ReadsWithSurrogateMate          0(0.00%)
-ReadsWithDiffScafMate           161240(2.88%)
-ReadsWithUnassignedMate         0(0.00%)
-TotalScaffoldLinks              52
-MeanScaffoldLinkWeight          3.19
-
-[Reads]
-TotalReadsInput                 NA
-TotalUsableReads                5594751
-AvgClearRange                   7693
-ContigReads                     3442929(61.54%)
-BigContigReads                  3368885(60.22%)
-SmallContigReads                74044(1.32%)
-DegenContigReads                32166(0.57%)
-SurrogateReads                  0(0.00%)
-PlacedSurrogateReads            0(0.00%)
-SingletonReads                  2119656(37.89%)
-ChaffReads                      1865838(33.35%)
-
-[Coverage]
-ContigsOnly                     14.02
-Contigs_Surrogates              14.02
-Contigs_Degens_Surrogates       13.98
-AllReads                        16.75
-
-[TotalBaseCounts]
-BasesCount                      NA
-ClearRangeLengthFRG             NA
-ClearRangeLengthASM             43037784734
-SurrogateBaseLength             0
-ContigBaseLength                36044376540
-DegenBaseLength                 27966370
-SingletonBaseLength             6965441824
-Contig_SurrBaseLength           36044376540
-
-[gcContent]
-Content                         41.03
-
-----------------------------------------END Tue Oct 23 12:15:52 2018 (359 seconds)
-The Cleaner has arrived.  Doing 'none'.
-
-======================================================================================
-COMPLETED MASURCA POLISHING WITH PILON AND DEDUPE
+=================================================================================
+COMPLETED MASURCA ASSEMBLY POLISHING WITH PILON AND DEDUPE
 ======================================================================================
 
 PILON FOR INDEXED BAM
@@ -389,7 +135,7 @@ dedupe.sh
 #SBATCH --mem=500G
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=32
-#SBATCH --job-name=M6_dedupe99_Mas3.8_pilon
+#SBATCH --job-name=M6_dedupe99
 #SBATCH --output output_%x_%j.txt
 #SBATCH --error errors_%x_%j.txt
 #SBATCH --mail-type=ALL
@@ -399,15 +145,7 @@ dedupe.sh
 module load nixpkgs/16.09  intel/2016.4  bbmap/37.36
 dedupe.sh in=Mas3.8_Pilon1_genome.scf.fasta.fasta out=Mas3.8_Pilon1_dedupe99.5.fa outd=Mas3.8_Pilon1_dupli99.5.fa minidentity=99.5
 
-$ cat  errors_M6_dedupe99_Mas3.8_pilon_13502306.txt
-For improved speed, add 'usejni=t' to the command line of BBMap tools which support the use of the compiled jni C code.
-    java -Djava.library.path=/cvmfs/soft.computecanada.ca/easybuild/software/2017/avx2/Compiler/intel2016.4/bbmap/37.36/jni/ -ea -Xmx563711m -Xms563711m -cp /cvmfs/soft.computecanada.ca/easybuild/software/2017/avx2/Compiler/intel2016.4/bbmap/37.36/current/ jgi.Dedupe in=Mas3.8_Pilon1_genome.scf.fasta.fasta out=Mas3.8_Pilon1_dedupe99.5.fa outd=Mas3.8_Pilon1_dupli99.fa minidentity=99.5
-Executing jgi.Dedupe [in=Mas3.8_Pilon1_genome.scf.fasta.fasta, out=Mas3.8_Pilon1_dedupe99.5.fa, outd=Mas3.8_Pilon1_dupli99.fa, minidentity=99.5]
-
-Dedupe version 37.36
-Initial:
-Memory: max=566465m, free=548733m, used=17732m
-
+OUTPUT:
 Found 0 duplicates.
 Finished exact matches.    Time: 11.514 seconds.
 Memory: max=566465m, free=445291m, used=121174m
@@ -422,7 +160,7 @@ REPEATMASK
 #SBATCH --mem=500G
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=32
-#SBATCH --job-name=RepMask_local_Mas3.8
+#SBATCH --job-name=RepMask_local
 #SBATCH --output output_%x_%j.txt
 #SBATCH --error errors_%x_%j.txt
 #SBATCH --mail-type=ALL
@@ -498,7 +236,7 @@ REPEATMODELER /1.0.11 for Mas3.8_Pilon1_dedupe99.5_edNm.fa
 
 BuildDatabase for Mas3.8_Pilon1_dedupe99.5_edNm.fa
 
-Repeatmodle_Mas3.3_ednm.sh
+Repeatmodel_builddatabase.sh
 #!/bin/bash
 #SBATCH --account=rrg-marke
 #SBATCH -t 0-06:00

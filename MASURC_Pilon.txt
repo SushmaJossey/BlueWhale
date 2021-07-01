@@ -60,8 +60,12 @@ JF_SIZE = 200000000
 #set this to 1 to use SOAPdenovo contigging/scaffolding module.  Assembly will be worse but will run faster. Useful for very large (>5Gbp) genomes from Illumina-only data
 SOAP_ASSEMBLY=0
 END
-sjossey@cedar5 Masurca_all_pac+Ill2]$ module load  nixpkgs/16.09  gcc/5.4.0  masurca/3.2.8
-[sjossey@cedar5 Masurca_all_pac+Ill2]$ masurca conf_masAll.txt
+
+
+------------------------------
+RUN CONFIS TO MAKE assemble.sh
+------------------------------
+$ masurca conf_masAll.txt
 Verifying PATHS...
 jellyfish OK
 runCA OK

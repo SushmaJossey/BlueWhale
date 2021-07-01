@@ -490,3 +490,60 @@ The query species was assumed to be mammalia
 RepeatMasker Combined Database: Dfam_Consensus-20170127, RepBase-20170127
 
 run with rmblastn version 2.6.0+
+
+
+===========================================================
+REPEATMODELER /1.0.11 for Mas3.8_Pilon1_dedupe99.5_edNm.fa
+===========================================================
+
+BuildDatabase for Mas3.8_Pilon1_dedupe99.5_edNm.fa
+
+Repeatmodle_Mas3.3_ednm.sh
+#!/bin/bash
+#SBATCH --account=rrg-marke
+#SBATCH -t 0-06:00
+#SBATCH --mem=500G
+#SBATCH --cpus-per-task=1
+#SBATCH --job-name=Repeatmodel_Mas3.3_ednm
+#SBATCH --output output_%x_%j.txt
+#SBATCH --error errors_%x_%j.txt
+#SBATCH --mail-type=ALL
+#SBATCH --mail-user=sjossey@gmail.com
+
+module load nixpkgs/16.09 gcc/5.4.0
+module load repeatmodeler/1.0.11
+echo "Starting run at: `date`"
+BuildDatabase -name Mas3.8_ded_ednm -engine ncbi Mas3.8_Pilon1_dedupe99.5_edNm.fa
+echo "Program finished with exit code $? at: `date`"
+
+Produced files : Mas3.8_ded_ednm.nhr
+    Mas3.8_ded_ednm.nin
+Mas3.8_ded_ednm.nnd
+Mas3.8_ded_ednm.nni
+Mas3.8_ded_ednm.nog
+Mas3.8_ded_ednm.nsq
+Mas3.8_ded_ednm.translation
+
+
+RepeatmodelRun_Mas3.3_ednm.sh
+#!/bin/bash
+#SBATCH --account=rrg-marke
+#SBATCH -t 2-00:00
+#SBATCH --mem=500G
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=32
+#SBATCH --job-name=RepeatmodelRun_Mas3.3_ednm
+#SBATCH --output output_%x_%j.txt
+#SBATCH --error errors_%x_%j.txt
+#SBATCH --mail-type=ALL
+#SBATCH --mail-user=sjossey@gmail.com
+
+module load nixpkgs/16.09 gcc/5.4.0
+module load repeatmodeler/1.0.11
+echo "Starting run at: `date`"
+RepeatModeler -engine ncbi -pa 32 -database Mas3.8_ded_ednm
+echo "Program finished with exit code $? at: `date`"
+
+Produced files:Mas3.8_ded_ednm-families.fa
+Mas3.8_ded_ednm-families.stk
+Produced folder: RM_85792.ThuMar71143262019
